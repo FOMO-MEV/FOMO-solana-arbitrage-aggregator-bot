@@ -13,13 +13,13 @@ Easy config. No MEV bot-specific nonsense. Hassle-free, fast setup.
 ## Key Features
 
 **💸 Fastest Solana arb signals via FOMO Loot API**<br>
+**💸 Sends transactions straight to SMB/NA on-chain programs — no extra bot layer.**<br>
 **💸 Dynamic priority fees (FOMO or Helius)**<br>
 **💸 Automated durable nonce management**<br>
 **💸 Flashloan integration**<br>
 **💸 Jito TipStream integration**<br>
 **💸 Automated ATA management**<br>
 **💸 10+ senders integrated (Helius, Stellium, Astralane, Jito, + more)**<br>
-**💸 Supported on-chain programs: SolanaMevBot + NotArb**<br>
 **💸 Supported base mints: WSOL, USDC, USD1**<br>
 **💸 Supported DEXes: Pump Swap, Raydium AMM, Raydium CLMM, Raydium CPMM, Meteora DLMM, Meteora DAMM v2, Whirlpool**<br>
 
