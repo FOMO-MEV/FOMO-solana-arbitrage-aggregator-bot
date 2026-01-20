@@ -4,7 +4,7 @@
 ## Configures general bot settings.
 ## Settings:
 ##  - RPC URL: RPC url for fetching onchain related data (NOT for sending)
-##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher.
+##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher (Soon!).
 ##  - GRPC X-Token: optional x-token for gRPC authentication
 ##  - Auto Restart: auto restart interval (in minutes). 0 => run indefinitely
 ##  - Debug Mode: if true, enables debug mode with verbose error logging
@@ -12,6 +12,7 @@
 ##  - Close Unused ATAs: if true, closes unused ATAs at start-up not in the current mint list (that have 0 balance) to reclaim rent-exempt SOL.
 ## API Keys:
 ##  - Optional API keys used for various services
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [bot]
 rpc_url = "https://solana-rpc.publicnode.com"
 grpc_url = "https://solana-yellowstone-grpc.publicnode.com:443"
@@ -38,6 +39,7 @@ flashblock = ""
 ## Settings:
 ##  - Skip Pools Without ALUTs: if true, skips pools with no found ALUTs
 ##  - Enabled DEXes: list of enabled DEXes. DEX availability varies by onchain provider.
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [markets]
 skip_pools_without_aluts = false
 enabled_dexes = [
@@ -56,6 +58,7 @@ enabled_dexes = [
 ## Enables flashloan support across all strategies.
 ## Uses onchain provider's (i.e. SMB & NotArb) in-house flashloan programs
 ## Note: enabling flashloans will override min/max trade size settings in Searcher
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [flashloans]
 enabled = true
 
@@ -69,7 +72,7 @@ enabled = true
 ##  - Use Recommended: if true, uses recommended fee from provider. Else uses specified percentile
 ##  - Percentile: percentile to use for fee calculation (e.g., 60 -> 60%)
 ##  - Update Interval: interval (in seconds) to update fee data from provider
-## For more info, visit: https://discord.gg/RaEa694AH5
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [optimal_priority_fee]
 enabled = true
 provider = "fomo"
@@ -88,6 +91,7 @@ update_interval = 45
 ## For Spam: recommended to have at least 3+ nonce accounts.
 ## If both are enabled, num_accounts should be additive (e.g. 5 + 3 = 8).
 ## Note: if all nonces are in-use, txs will not be sent. So ensure enough nonces are created for your use-case.
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [durable_nonces]
 enabled = false
 num_accounts = 4
@@ -96,7 +100,7 @@ close_unused_nonces = true
 ## ===================================================================
 ## SPAM STRATEGY
 ## ===================================================================
-## For more info, visit: https://discord.gg/RaEa694AH5
+## For more info, visit: https://discord.gg/7EGdEc2usV
 [strategy.spam]
 enabled = true
 onchain_program = ["notarb","smb"]
