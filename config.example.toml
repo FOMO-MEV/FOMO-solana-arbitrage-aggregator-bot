@@ -1,0 +1,247 @@
+## ===================================================================
+## BOT SETTINGS
+## ===================================================================
+## Configures general bot settings.
+## Settings:
+##  - RPC URL: RPC url for fetching onchain related data (NOT for sending)
+##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher.
+##  - GRPC X-Token: optional x-token for gRPC authentication
+##  - Auto Restart: auto restart interval (in minutes). 0 => run indefinitely
+##  - Debug Mode: if true, enables debug mode with verbose error logging
+##  - Slot Memo: if true, prepends the slot the tx landed to memo message
+##  - Close Unused ATAs: if true, closes unused ATAs at start-up not in the current mint list (that have 0 balance) to reclaim rent-exempt SOL.
+## API Keys:
+##  - Optional API keys used for various services
+[bot]
+rpc_url = "https://solana-rpc.publicnode.com"
+grpc_url = "https://solana-yellowstone-grpc.publicnode.com:443"
+grpc_x_token = ""
+auto_restart = 20
+debug_mode = false
+slot_memo = false
+close_unused_atas = true
+
+[bot.api_keys]
+circular = ""
+nextblock = ""
+helius = ""
+stellium = ""
+astralane = ""
+node1 = ""
+razor = ""
+flashblock = ""
+
+## ===================================================================
+## MARKETS
+## ===================================================================
+## Configures market settings across all strategies.
+## Settings:
+##  - Skip Pools Without ALUTs: if true, skips pools with no found ALUTs
+##  - Enabled DEXes: list of enabled DEXes. DEX availability varies by onchain provider.
+[markets]
+skip_pools_without_aluts = false
+enabled_dexes = [
+    "pump_swap",
+    "meteora_dlmm",
+    "meteora_damm_v2",
+    "raydium_amm",
+    "raydium_clmm",
+    "raydium_cpmm",
+    "whirlpool"
+]
+
+## ===================================================================
+## FLASHLOANS
+## ===================================================================
+## Enables flashloan support across all strategies.
+## Uses onchain provider's (i.e. SMB & NotArb) in-house flashloan programs
+## Note: enabling flashloans will override min/max trade size settings in Searcher
+[flashloans]
+enabled = true
+
+## ===================================================================
+## OPTIMAL PRIORITY FEE
+## ===================================================================
+## Configures optimal priority fee settings across all strategies.
+## Settings:
+##  - Enabled: if true, overrides compute_unit_price across ALL strategies
+##  - Provider: fomo or helius (helius requires api key)
+##  - Use Recommended: if true, uses recommended fee from provider. Else uses specified percentile
+##  - Percentile: percentile to use for fee calculation (e.g., 60 -> 60%)
+##  - Update Interval: interval (in seconds) to update fee data from provider
+## For more info, visit: https://discord.gg/RaEa694AH5
+[optimal_priority_fee]
+enabled = true
+provider = "fomo"
+use_recommended = true
+percentile = 65
+update_interval = 45
+
+## ================================================================
+## DURABLE NONCES
+## ================================================================
+## If enabled, great for spamming lots of senders per opportunity (or cycle): the first tx processed by leader (success or fail) consumes the nonce,
+## automatically dropping/invalidating the rest — downside: only ONE sender can land per opportunity.
+## The bot will create and manage a nonce-account pool automatically; each account requires a small rent-exempt SOL deposit + tx fees.
+## Close unused nonces: if true (and nonces are disabled), will close any existing nonce accounts bot created at start-up to reclaim rent-exempt SOL.
+## For Searcher: recommended to have at least 5+ nonce accounts.
+## For Spam: recommended to have at least 3+ nonce accounts.
+## If both are enabled, num_accounts should be additive (e.g. 5 + 3 = 8).
+## Note: if all nonces are in-use, txs will not be sent. So ensure enough nonces are created for your use-case.
+[durable_nonces]
+enabled = false
+num_accounts = 4
+close_unused_nonces = true
+
+## ===================================================================
+## SPAM STRATEGY
+## ===================================================================
+## For more info, visit: https://discord.gg/RaEa694AH5
+[strategy.spam]
+enabled = true
+onchain_program = ["notarb","smb"]
+memo = ""
+disable_durable_nonces = false
+refresh_interval = 4
+process_delay = 400
+stagger_txs = true
+max_compute_unit_limit = 349_690
+max_markets_per_tx = 4
+min_liquidity_usd_per_market = 100
+restrict_level = 0
+
+[[strategy.spam.base_mint]] # WSOL
+enabled = true
+base_mint = "So11111111111111111111111111111111111111112"
+
+[[strategy.spam.base_mint]] # USDC
+enabled = false
+base_mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
+[[strategy.spam.base_mint]] # USD1
+enabled = false
+base_mint = "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
+
+## Spam Mints
+[strategy.spam.mints.from_file]
+enabled = false
+include_mints_from_file = ""
+
+[strategy.spam.mints.fomo]
+enabled = true
+base_mints = []
+max_mint_count = 1
+decay_window = 300
+exclude_mints = ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]
+rank_by = "momentum"
+min_roi = 1000
+min_volume = 0
+min_txs = 20
+min_markets = 2
+from_wallets = []
+from_bots = []
+
+## Spam Senders
+[strategy.spam.sender.rpc]
+enabled = true
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_sender = false
+no_failure_mode = true
+send_urls = [
+    "https://mainnet.helius-rpc.com/?api-key=*********************"
+]
+
+[strategy.spam.sender.jito]
+enabled = true
+skip_durable_nonce = false
+use_different_tx_per_block_engine = false
+tip_amount = { strategy = "tipstream", percentile = 65, max_tip = 20_000 }
+uuid = ""
+no_failure_mode = true
+block_engines = ["ams", "fra"]
+
+[strategy.spam.sender.helius]
+enabled = true
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 500_000, to = 2_000_000 }
+no_failure_mode = false
+regions = ["fra"]
+
+[strategy.spam.sender.stellium]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+regions = ["fra"]
+
+[strategy.spam.sender.nextblock]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+mev_protect = false
+regions = ["fra"]
+
+[strategy.spam.sender.astralane]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+mev_protect = false
+regions = ["fra"]
+
+[strategy.spam.sender.fast]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+mev_protect = false
+regions = ["fra"]
+
+[strategy.spam.sender.node1]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 200_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 2_000_000, to = 2_500_000 }
+no_failure_mode = false
+regions = ["fra"]
+
+[strategy.spam.sender.razor]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 200_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+revert_protection = false
+regions = ["fra"]
+
+[strategy.spam.sender.flashblock]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 200_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+regions = ["fra"]
