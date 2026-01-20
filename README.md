@@ -25,5 +25,6 @@ Easy config. No MEV bot-specific nonsense. Hassle-free, fast setup.
 
 ## Documentation
 
-For documentation and support, visit our Discord server...
+For documentation and support, visit our Discord server...<br>
+
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/23xd3Z3Ea9)](https://discord.gg/23xd3Z3Ea9)
