@@ -4,7 +4,7 @@
 
 ## Gimme the loot
 
-A zero-fluff, multi-program arbitrage aggregator bot on Solana. Powered by Loot, our based signal engine that sniffs out the earliest breakouts and the most likely-to-print routes before the herd shows up. Spitting out action-ready bundles of hot mints, the exact pools to hit, ALUTs ready to plug, and dialed priority fees — so you can route, send, and smash faster. It’s built for degens who care about one thing: landing profitable wins first — fewer dead ends, less noise, no cope.
+A zero-fluff, **multi-program arbitrage aggregator bot** on Solana. **Powered by Loot**, our based signal engine that sniffs out the earliest breakouts and the most likely-to-print routes before the herd shows up. Spitting out action-ready bundles of hot mints, the exact pools to hit, ALUTs ready to plug, and dialed priority fees — so you can route, send, and land faster. It’s built for degens who care about one thing: **landing profitable wins first** — fewer dead ends, less noise, no cope.
 
 FOMO is the execution layer — lightweight, stupid fast, and built to ship wins, not babysit configs. Under the hood it plugs into proven on-chain programs (SolanaMevBot + NotArb), but the flex is yours: pick the program you want, or dual-send to both simultaneously. No MEV-science-fair setup, no 40-tab tuning session — configure once, hit start, and let it spam the edge.
 
