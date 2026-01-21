@@ -87,11 +87,8 @@ update_interval = 45
 ## automatically dropping/invalidating the rest — downside: only ONE sender can land per opportunity.
 ## The bot will create and manage a nonce-account pool automatically; each account requires a small rent-exempt SOL deposit + tx fees.
 ## Close unused nonces: if true (and nonces are disabled), will close any existing nonce accounts bot created at start-up to reclaim rent-exempt SOL.
-## For Searcher: recommended to have at least 5+ nonce accounts.
-## For Spam: recommended to have at least 3+ nonce accounts.
-## If both are enabled, num_accounts should be additive (e.g. 5 + 3 = 8).
+## For Spam: recommended to have at least 4+ nonce accounts.
 ## Note: if all nonces are in-use, txs will not be sent. So ensure enough nonces are created for your use-case.
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [durable_nonces]
 enabled = false
 num_accounts = 4
@@ -100,6 +97,24 @@ close_unused_nonces = true
 ## ===================================================================
 ## SPAM STRATEGY
 ## ===================================================================
+## Continuously sends transactions onchain to calculate the most optimal trade size and executes any profitable opportunities.
+##
+## Settings:
+##  - Onchain Program: the onchain program(s) to use for tx execution. If > 1 is set, opportunity will be sent to each one. Options: smb, notarb
+##  - Memo: optional memo to add to txs
+##  - Disable Durable Nonces: if true, disables the use of durable nonces on this strategy
+##  - Refresh Interval: cycle (in minutes) to refresh mint(s)
+##  - Process Delay: delay (in ms) between sending each transaction
+##  - Stagger TXs: if true (and using multiple onchain programs), splits the process delay across onchain programs so each fires sequentially. Else txs are dispatched in parallel.
+##    • Example: 400ms process delay using 2 onchain programs → each fires 200 ms apart (t=0, t=+200 ms)
+##    • Example 2: If wanting to rotate sending to both onchain programs, while sending a transaction every 400ms, set stagger_txs = true and process_delay = 800
+##  - Max Compute Unit Limit: maximum compute unit limit per transaction
+##  - Max Markets Per TX: maximum number of markets to include per transaction (Recommended: 4)
+##  - Min Liquidity Per Market: minimum liquidity required per market (in USD)
+##  - Restrict Level: Controls max age of tx at landing time. 0 = no restriction, 5 = strictest (~1-2 slots). Requires fast RPC for 4-5.
+##
+## Base mints: optionally set (or disable) each base mint to configure market pairs used in spam
+##  - Base Mint: Supported options are SOL, USDC, and USD1
 ## For more info, visit: https://discord.gg/7EGdEc2usV
 [strategy.spam]
 enabled = true
