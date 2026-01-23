@@ -4,7 +4,7 @@
 ## Configures general bot settings.
 ## Settings:
 ##  - RPC URL: RPC url for fetching onchain related data (NOT for sending)
-##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher (Soon!).
+##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher (not yet released).
 ##  - GRPC X-Token: optional x-token for gRPC authentication
 ##  - Auto Restart: auto restart interval (in minutes). 0 => run indefinitely
 ##  - Debug Mode: if true, enables debug mode with verbose error logging
@@ -12,7 +12,6 @@
 ##  - Close Unused ATAs: if true, closes unused ATAs at start-up not in the current mint list (that have 0 balance) to reclaim rent-exempt SOL.
 ## API Keys:
 ##  - Optional API keys used for various services
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [bot]
 rpc_url = "https://solana-rpc.publicnode.com"
 grpc_url = "https://solana-yellowstone-grpc.publicnode.com:443"
@@ -39,7 +38,6 @@ flashblock = ""
 ## Settings:
 ##  - Skip Pools Without ALUTs: if true, skips pools with no found ALUTs
 ##  - Enabled DEXes: list of enabled DEXes. DEX availability varies by onchain provider.
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [markets]
 skip_pools_without_aluts = false
 enabled_dexes = [
@@ -58,7 +56,6 @@ enabled_dexes = [
 ## Enables flashloan support across all strategies.
 ## Uses onchain provider's (i.e. SMB & NotArb) in-house flashloan programs
 ## Note: enabling flashloans will override min/max trade size settings in Searcher
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [flashloans]
 enabled = true
 
@@ -72,7 +69,6 @@ enabled = true
 ##  - Use Recommended: if true, uses recommended fee from provider. Else uses specified percentile
 ##  - Percentile: percentile to use for fee calculation (e.g., 60 -> 60%)
 ##  - Update Interval: interval (in seconds) to update fee data from provider
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [optimal_priority_fee]
 enabled = true
 provider = "fomo"
@@ -100,9 +96,11 @@ close_unused_nonces = true
 ## Continuously sends transactions onchain to calculate the most optimal trade size and executes any profitable opportunities.
 ##
 ## Settings:
-##  - Onchain Program: the onchain program(s) to use for tx execution. If > 1 is set, opportunity will be sent to each one. Options: smb, notarb
+##  - Onchain Program: the onchain program(s) to use for tx execution. 
+##    • If > 1 is set (both SMB and NA), opportunity will be sent to each one.
+##    • Options: smb, notarb
 ##  - Memo: optional memo to add to txs
-##  - Disable Durable Nonces: if true, disables the use of durable nonces on this strategy
+##  - Disable Durable Nonces: disables the use of durable nonces on this strategy
 ##  - Refresh Interval: cycle (in minutes) to refresh mint(s)
 ##  - Process Delay: delay (in ms) between sending each transaction
 ##  - Stagger TXs: if true (and using multiple onchain programs), splits the process delay across onchain programs so each fires sequentially. Else txs are dispatched in parallel.
@@ -110,23 +108,20 @@ close_unused_nonces = true
 ##    • Example 2: If wanting to rotate sending to both onchain programs, while sending a transaction every 400ms, set stagger_txs = true and process_delay = 800
 ##  - Max Compute Unit Limit: maximum compute unit limit per transaction
 ##  - Max Markets Per TX: maximum number of markets to include per transaction (Recommended: 4)
-##  - Min Liquidity Per Market: minimum liquidity required per market (in USD)
 ##  - Restrict Level: Controls max age of tx at landing time. 0 = no restriction, 5 = strictest (~1-2 slots). Requires fast RPC for 4-5.
 ##
 ## Base mints: optionally set (or disable) each base mint to configure market pairs used in spam
 ##  - Base Mint: Supported options are SOL, USDC, and USD1
-## For more info, visit: https://discord.gg/7EGdEc2usV
 [strategy.spam]
 enabled = true
 onchain_program = ["notarb","smb"]
 memo = ""
 disable_durable_nonces = false
-refresh_interval = 4
+refresh_interval = 1
 process_delay = 400
-stagger_txs = true
-max_compute_unit_limit = 349_690
+stagger_txs = false
+max_compute_unit_limit = 350_000
 max_markets_per_tx = 4
-min_liquidity_usd_per_market = 100
 restrict_level = 0
 
 [[strategy.spam.base_mint]] # WSOL
@@ -141,24 +136,46 @@ base_mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 enabled = false
 base_mint = "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
 
-## Spam Mints
+## Spam Mints From File
 [strategy.spam.mints.from_file]
 enabled = false
 include_mints_from_file = ""
 
+## FOMO Loot API
+## Base layer config for mint discovery
 [strategy.spam.mints.fomo]
 enabled = true
 base_mints = []
 max_mint_count = 1
-decay_window = 50
-exclude_mints = ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]
+aggregation_window = 300
 rank_by = "momentum"
-min_roi = 1000
+min_roi = 50
 min_volume = 0
 min_txs = 80
-min_markets = 2
 from_wallets = []
 from_bots = []
+exclude_mints = [
+	"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+	"Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+	"USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
+]
+
+## FOMO Loot API: Market Filtering
+## Filter the markets returned per mint that meet this criteria
+[strategy.spam.mints.fomo.markets_per_mint]
+min_count = 2
+max_count = 4
+min_liquidity_usd = 500
+min_vol = 0
+min_txs = 5
+rank_by = "volume"
+
+## Spam Mints From Jupiter Trending
+[strategy.spam.mints.jupiter_trending]
+enabled = false
+mints_count = 1
+interval = "5m"
+rank_by_volume = true
 
 ## Spam Senders
 [strategy.spam.sender.rpc]
@@ -172,8 +189,9 @@ send_urls = [
     "https://mainnet.helius-rpc.com/?api-key=*********************"
 ]
 
+## Jito
 [strategy.spam.sender.jito]
-enabled = true
+enabled = false
 skip_durable_nonce = false
 use_different_tx_per_block_engine = false
 tip_amount = { strategy = "tipstream", percentile = 65, max_tip = 20_000 }
@@ -181,16 +199,18 @@ uuid = ""
 no_failure_mode = true
 block_engines = ["ams", "fra"]
 
+## Helius Sender
 [strategy.spam.sender.helius]
-enabled = true
+enabled = false
 skip_durable_nonce = false
 compute_unit_price = 40_000
 max_compute_unit_price = 100_000
 use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 500_000, to = 2_000_000 }
+tip_amount = { strategy = "random", from = 200_000, to = 500_000 }
 no_failure_mode = false
 regions = ["fra"]
 
+### Stellium
 [strategy.spam.sender.stellium]
 enabled = false
 skip_durable_nonce = false
@@ -201,6 +221,7 @@ tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
 no_failure_mode = false
 regions = ["fra"]
 
+## NextBlock
 [strategy.spam.sender.nextblock]
 enabled = false
 skip_durable_nonce = false
@@ -212,17 +233,19 @@ no_failure_mode = false
 mev_protect = false
 regions = ["fra"]
 
+## Astralane
 [strategy.spam.sender.astralane]
 enabled = false
 skip_durable_nonce = false
 compute_unit_price = 40_000
 max_compute_unit_price = 100_000
 use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+tip_amount = { strategy = "random", from = 10_000, to = 20_000 }
 no_failure_mode = false
 mev_protect = false
 regions = ["fra"]
 
+## Circular Fast
 [strategy.spam.sender.fast]
 enabled = false
 skip_durable_nonce = false
@@ -234,6 +257,7 @@ no_failure_mode = false
 mev_protect = false
 regions = ["fra"]
 
+## Node1
 [strategy.spam.sender.node1]
 enabled = false
 skip_durable_nonce = false
@@ -244,6 +268,7 @@ tip_amount = { strategy = "random", from = 2_000_000, to = 2_500_000 }
 no_failure_mode = false
 regions = ["fra"]
 
+## BlockRazor
 [strategy.spam.sender.razor]
 enabled = false
 skip_durable_nonce = false
@@ -255,12 +280,13 @@ no_failure_mode = false
 revert_protection = false
 regions = ["fra"]
 
+## FlashBlock
 [strategy.spam.sender.flashblock]
 enabled = false
 skip_durable_nonce = false
 compute_unit_price = 40_000
 max_compute_unit_price = 200_000
 use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+tip_amount = { strategy = "random", from = 100_000, to = 200_000 }
 no_failure_mode = false
 regions = ["fra"]
