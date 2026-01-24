@@ -30,6 +30,7 @@ astralane = ""
 node1 = ""
 razor = ""
 flashblock = ""
+falcon = ""
 
 ## ===================================================================
 ## MARKETS
@@ -149,9 +150,9 @@ base_mints = []
 max_mint_count = 1
 aggregation_window = 300
 rank_by = "momentum"
-min_roi = 50
-min_volume = 0
-min_txs = 80
+min_roi = 30
+min_volume = 2000
+min_txs = 50
 from_wallets = []
 from_bots = []
 exclude_mints = [
@@ -197,7 +198,7 @@ use_different_tx_per_block_engine = false
 tip_amount = { strategy = "tipstream", percentile = 65, max_tip = 20_000 }
 uuid = ""
 no_failure_mode = true
-block_engines = ["ams", "fra"]
+block_engines = ["ams","dub","fra","lon","nyc","slc","sgr","tyo"]
 
 ## Helius Sender
 [strategy.spam.sender.helius]
@@ -288,5 +289,16 @@ compute_unit_price = 40_000
 max_compute_unit_price = 200_000
 use_different_tx_per_region = false
 tip_amount = { strategy = "random", from = 100_000, to = 200_000 }
+no_failure_mode = false
+regions = ["fra"]
+
+## Falcon (Corvus)
+[strategy.spam.sender.falcon]
+enabled = false
+skip_durable_nonce = false
+compute_unit_price = 40_000
+max_compute_unit_price = 200_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
 no_failure_mode = false
 regions = ["fra"]
