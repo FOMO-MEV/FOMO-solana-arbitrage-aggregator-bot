@@ -22,6 +22,7 @@ slot_memo = false
 close_unused_atas = true
 
 [bot.api_keys]
+fomo_loot_api = ""
 circular = ""
 nextblock = ""
 helius = ""
