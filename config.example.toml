@@ -53,6 +53,23 @@ enabled_dexes = [
 ]
 
 ## ===================================================================
+## REBALANCER
+## ===================================================================
+## Converts WSOL to SOL when SOL balance drops below a certain threshold.
+## Settings:
+##  - Enabled: if true, enables the rebalancer
+##  - Min SOL Balance: minimum SOL balance (in lamports) before triggering a rebalance
+##  - Min WSOL Balance: minimum WSOL balance (in lamports) to wrap back after unwrapping
+##    • If 0.. will just create WSOL ATA
+##  - CU Price TX: compute unit price for the rebalance transaction
+## Note: Triggers when SOL < min_sol_balance and total balance (SOL + WSOL) covers min_sol_balance + min_wsol_balance + fees.
+[rebalancer]
+enabled = true
+min_sol_balance = 100_000_000 # 0.1 SOL
+min_wsol_balance = 0
+cu_price_tx = 100_000
+
+## ===================================================================
 ## FLASHLOANS
 ## ===================================================================
 ## Enables flashloan support across all strategies.
