@@ -32,6 +32,9 @@ node1 = ""
 razor = ""
 flashblock = ""
 falcon = ""
+temporal = ""
+lunar_lander = ""
+aura = ""
 
 ## ===================================================================
 ## MARKETS
@@ -115,7 +118,7 @@ close_unused_nonces = true
 ## Continuously sends transactions onchain to calculate the most optimal trade size and executes any profitable opportunities.
 ##
 ## Settings:
-##  - Onchain Program: the onchain program(s) to use for tx execution. 
+##  - Onchain Program: the onchain program(s) to use for tx execution.
 ##    • If > 1 is set (both SMB and NA), opportunity will be sent to each one.
 ##    • Options: smb, notarb
 ##  - Memo: optional memo to add to txs
@@ -198,7 +201,11 @@ mints_count = 1
 interval = "5m"
 rank_by_volume = true
 
-## Spam Senders
+## ===================================================================
+## SPAM SENDERS
+## ===================================================================
+## For a list of ALL supported senders and their specific settings, visit:
+## https://fomo-mev.gitbook.io/docs/bot/senders
 [strategy.spam.sender.rpc]
 enabled = true
 skip_durable_nonce = false
@@ -231,96 +238,4 @@ tip_amount = { strategy = "random", from = 200_000, to = 500_000 }
 no_failure_mode = false
 swqos_only = false
 use_api_key = false
-regions = ["fra"]
-
-### Stellium
-[strategy.spam.sender.stellium]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 100_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
-no_failure_mode = false
-regions = ["fra"]
-
-## NextBlock
-[strategy.spam.sender.nextblock]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 100_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
-no_failure_mode = false
-mev_protect = false
-regions = ["fra"]
-
-## Astralane
-[strategy.spam.sender.astralane]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 100_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 10_000, to = 20_000 }
-no_failure_mode = false
-mev_protect = false
-regions = ["fra"]
-
-## Circular Fast
-[strategy.spam.sender.fast]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 100_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
-no_failure_mode = false
-mev_protect = false
-regions = ["fra"]
-
-## Node1
-[strategy.spam.sender.node1]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 200_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 2_000_000, to = 2_500_000 }
-no_failure_mode = false
-regions = ["fra"]
-
-## BlockRazor
-[strategy.spam.sender.razor]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 200_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
-no_failure_mode = false
-revert_protection = false
-regions = ["fra"]
-
-## FlashBlock
-[strategy.spam.sender.flashblock]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 200_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 100_000, to = 200_000 }
-no_failure_mode = false
-regions = ["fra"]
-
-## Falcon (Corvus)
-[strategy.spam.sender.falcon]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 200_000
-use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
-no_failure_mode = false
 regions = ["fra"]
