@@ -229,6 +229,8 @@ max_compute_unit_price = 100_000
 use_different_tx_per_region = false
 tip_amount = { strategy = "random", from = 200_000, to = 500_000 }
 no_failure_mode = false
+swqos_only = false
+use_api_key = false
 regions = ["fra"]
 
 ### Stellium
