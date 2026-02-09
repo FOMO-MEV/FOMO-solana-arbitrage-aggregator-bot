@@ -105,12 +105,16 @@ update_interval = 45
 ## automatically dropping/invalidating the rest — downside: only ONE sender can land per opportunity.
 ## The bot will create and manage a nonce-account pool automatically; each account requires a small rent-exempt SOL deposit + tx fees.
 ## Close unused nonces: if true (and nonces are disabled), will close any existing nonce accounts bot created at start-up to reclaim rent-exempt SOL.
+## Nonce Seed: overrides default seed for nonce account creation. E.g. "ny-bot", etc.
+##   - Only needed when running multiple bot instances on the same wallet (use unique seed per bot instance).
+##   - Leave empty to use default seed (recommended).
 ## For Spam: recommended to have at least 4+ nonce accounts.
 ## Note: if all nonces are in-use, txs will not be sent. So ensure enough nonces are created for your use-case.
 [durable_nonces]
 enabled = false
 num_accounts = 4
 close_unused_nonces = true
+nonce_seed = ""
 
 ## ===================================================================
 ## SPAM STRATEGY
@@ -131,6 +135,8 @@ close_unused_nonces = true
 ##  - Max Compute Unit Limit: maximum compute unit limit per transaction
 ##  - Max Markets Per TX: maximum number of markets to include per transaction (Recommended: 4)
 ##  - Restrict Level: Controls max age of tx at landing time. 0 = no restriction, 5 = strictest (~1-2 slots). Requires fast RPC for 4-5.
+##  - Stay On Winner: if enabled, extends the current cycle when wallet has ≥ min_wins during the current refresh_interval
+##    • Example: min_wins = 2, refresh_interval = 1min, and wallet lands 3 txs → bot continues spamming current mint(s) for another cycle.
 ##
 ## Base mints: optionally set (or disable) each base mint to configure market pairs used in spam
 ##  - Base Mint: Supported options are SOL, USDC, and USD1
@@ -145,6 +151,7 @@ stagger_txs = true
 max_compute_unit_limit = 369_690
 max_markets_per_tx = 4
 restrict_level = 0
+stay_on_winner = { enabled = true, min_wins = 2 }
 
 [[strategy.spam.base_mint]] # WSOL
 enabled = true

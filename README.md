@@ -28,7 +28,7 @@ Easy config. No MEV bot-specific nonsense. Hassle-free, fast setup.
 
 **Everything lives here:**<br>
 https://fomo-mev.gitbook.io/docs
- 
+
 **What you’ll find there:**<br>
 - Setup + config + running the FOMO Arbitrage Aggregator Bot<br>
 - Full breakdown of the Loot API (endpoints, filters, rank metrics, etc.)
@@ -37,5 +37,5 @@ https://fomo-mev.gitbook.io/docs
 
 For more information and support, join our Discord community below:
 
-[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/7EGdEc2usV)](https://discord.gg/7EGdEc2usV)
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/7EGdEc2usV)](https://discord.gg/7EGdEc2usV)
 
