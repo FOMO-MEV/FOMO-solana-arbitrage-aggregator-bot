@@ -2,45 +2,29 @@
 ## BOT SETTINGS
 ## ===================================================================
 ## Configures general bot settings.
+##
 ## Settings:
 ##  - RPC URL: RPC url for fetching onchain related data (NOT for sending)
-##  - GRPC URL: gRPC url for streaming market data. REQUIRED for Searcher (not yet released).
-##  - GRPC X-Token: optional x-token for gRPC authentication
 ##  - Auto Restart: auto restart interval (in minutes). 0 => run indefinitely
 ##  - Debug Mode: if true, enables debug mode with verbose error logging
 ##  - Slot Memo: if true, prepends the slot the tx landed to memo message
 ##  - Close Unused ATAs: if true, closes unused ATAs at start-up not in the current mint list (that have 0 balance) to reclaim rent-exempt SOL.
-## API Keys:
-##  - Optional API keys used for various services
+##  - FOMO API Key: optional API key. If present, waives the FOMO Platform Fee of 3.75%.
+##
+## For more info, visit: https://discord.gg/RaEa694AH5
 [bot]
 rpc_url = "https://solana-rpc.publicnode.com"
-grpc_url = "https://solana-yellowstone-grpc.publicnode.com:443"
-grpc_x_token = ""
 auto_restart = 20
 debug_mode = false
 slot_memo = false
 close_unused_atas = true
-
-[bot.api_keys]
-fomo_loot_api = ""
-circular = ""
-nextblock = ""
-helius = ""
-stellium = ""
-astralane = ""
-node1 = ""
-razor = ""
-flashblock = ""
-falcon = ""
-temporal = ""
-lunar_lander = ""
-aura = ""
-0slot = ""
+fomo_api_key = ""
 
 ## ===================================================================
 ## MARKETS
 ## ===================================================================
 ## Configures market settings across all strategies.
+##
 ## Settings:
 ##  - Skip Pools Without ALUTs: if true, skips pools with no found ALUTs
 ##  - Enabled DEXes: list of enabled DEXes. DEX availability varies by onchain provider.
@@ -60,13 +44,15 @@ enabled_dexes = [
 ## REBALANCER
 ## ===================================================================
 ## Converts WSOL to SOL when SOL balance drops below a certain threshold.
+##
 ## Settings:
 ##  - Enabled: if true, enables the rebalancer
 ##  - Min SOL Balance: minimum SOL balance (in lamports) before triggering a rebalance
 ##  - Min WSOL Balance: minimum WSOL balance (in lamports) to wrap back after unwrapping
-##    • If 0.. will just create WSOL ATA
+##    • If 0, will just create WSOL ATA
 ##  - CU Price TX: compute unit price for the rebalance transaction
-## Note: Triggers when SOL < min_sol_balance and total balance (SOL + WSOL) covers min_sol_balance + min_wsol_balance + fees.
+##
+## Note: Triggers when SOL < min_sol_balance and total balance (SOL + WSOL) covers min_sol_balance + min_wsol_balance.
 [rebalancer]
 enabled = true
 min_sol_balance = 100_000_000 # 0.1 SOL
@@ -78,6 +64,7 @@ cu_price_tx = 100_000
 ## ===================================================================
 ## Enables flashloan support across all strategies.
 ## Uses onchain provider's (i.e. SMB & NotArb) in-house flashloan programs
+##
 ## Note: enabling flashloans will override min/max trade size settings in Searcher
 [flashloans]
 enabled = true
@@ -86,31 +73,44 @@ enabled = true
 ## OPTIMAL PRIORITY FEE
 ## ===================================================================
 ## Configures optimal priority fee settings across all strategies.
+##
 ## Settings:
-##  - Enabled: if true, overrides compute_unit_price across ALL strategies
-##  - Provider: fomo or helius (helius requires api key)
-##  - Use Recommended: if true, uses recommended fee from provider. Else uses specified percentile
+##  - Enabled: if true, overrides compute_unit_price across ALL strategies and triggers
+##  - Use Recommended: if true, uses recommended fee computed from FOMO's Loot API. Else uses specified percentile
 ##  - Percentile: percentile to use for fee calculation (e.g., 60 -> 60%)
-##  - Update Interval: interval (in seconds) to update fee data from provider
+##  - Update Interval: interval (in seconds) to update priority fee data
+##
+## Note: when using multiple mint triggers, generally you want to manually set CU price per trigger.
 [optimal_priority_fee]
-enabled = true
-provider = "fomo"
+enabled = false
 use_recommended = true
 percentile = 65
 update_interval = 45
 
-## ================================================================
+## ===================================================================
 ## DURABLE NONCES
-## ================================================================
-## If enabled, great for spamming lots of senders per opportunity (or cycle): the first tx processed by leader (success or fail) consumes the nonce,
-## automatically dropping/invalidating the rest — downside: only ONE sender can land per opportunity.
-## The bot will create and manage a nonce-account pool automatically; each account requires a small rent-exempt SOL deposit + tx fees.
-## Close unused nonces: if true (and nonces are disabled), will close any existing nonce accounts bot created at start-up to reclaim rent-exempt SOL.
-## Nonce Seed: overrides default seed for nonce account creation. E.g. "ny-bot", etc.
-##   - Only needed when running multiple bot instances on the same wallet (use unique seed per bot instance).
-##   - Leave empty to use default seed (recommended).
-## For Spam: recommended to have at least 4+ nonce accounts.
-## Note: if all nonces are in-use, txs will not be sent. So ensure enough nonces are created for your use-case.
+## ===================================================================
+## Great for spamming multiple senders per opportunity: the first tx processed
+## by leader (success or fail) consumes the nonce, automatically invalidating
+## the rest — meaning only ONE sender can land per opportunity.
+##
+## How it works:
+##  1. Bot creates and manages a nonce-account pool automatically
+##  2. Each account requires a small rent-exempt SOL deposit + tx fees
+##  3. When nonce is consumed, it's recycled for next opportunity
+##
+## Settings:
+##  - Enabled: if true, enables durable nonces
+##  - Num Accounts: number of nonce accounts to create/manage
+##  - Close Unused Nonces: if true (and nonces disabled), closes existing nonce accounts at start-up to reclaim SOL
+##  - Nonce Seed: overrides default seed for nonce account creation
+##    • Only needed when running multiple bot instances on same wallet (use unique seed per instance)
+##    • Leave empty to use default seed (recommended)
+##
+## Recommendations:
+##  - Spam: 4+ nonce accounts
+##
+## Note: if all nonces are in-use, txs will not be sent. Ensure enough nonces for your use-case.
 [durable_nonces]
 enabled = false
 num_accounts = 4
@@ -120,38 +120,43 @@ nonce_seed = ""
 ## ===================================================================
 ## SPAM STRATEGY
 ## ===================================================================
-## Continuously sends transactions onchain to calculate the most optimal trade size and executes any profitable opportunities.
+## Continuously sends transactions onchain to calculate the most optimal
+## trade size and executes any profitable opportunities.
+##
+## How it works:
+##  1. Fetches mints matching your trigger criteria (see SPAM MINT TRIGGERS below)
+##  2. Builds and sends transaction(s) every process_delay cycle
+##  3. Onchain program calculates optimal trade size and executes if profitable
+##  4. Refreshes mints after refresh_interval (unless stay_on_winner extends it)
 ##
 ## Settings:
-##  - Onchain Program: the onchain program(s) to use for tx execution.
-##    • If > 1 is set (both SMB and NA), opportunity will be sent to each one.
-##    • Options: smb, notarb
+##  - Onchain Program: the onchain program(s) to use for tx execution. Options: smb, notarb
+##    • If multiple set, opportunity will be sent to each one.
 ##  - Memo: optional memo to add to txs
 ##  - Disable Durable Nonces: disables the use of durable nonces on this strategy
-##  - Refresh Interval: cycle (in minutes) to refresh mint(s)
-##  - Process Delay: delay (in ms) between sending each transaction
-##  - Stagger TXs: if true (and using multiple onchain programs), splits the process delay across onchain programs so each fires sequentially. Else txs are dispatched in parallel.
-##    • Example: 400ms process delay using 2 onchain programs → each fires 200 ms apart (t=0, t=+200 ms)
-##    • Example 2: If wanting to rotate sending to both onchain programs, while sending a transaction every 400ms, set stagger_txs = true and process_delay = 800
-##  - Max Compute Unit Limit: maximum compute unit limit per transaction
-##  - Max Markets Per TX: maximum number of markets to include per transaction (Recommended: 4)
-##  - Restrict Level: Controls max age of tx at landing time. 0 = no restriction, 5 = strictest (~1-2 slots). Requires fast RPC for 4-5.
-##  - Stay On Winner: if enabled, extends the current cycle when wallet has ≥ min_wins during the current refresh_interval
-##    • Example: min_wins = 2, refresh_interval = 1min, and wallet lands 3 txs → bot continues spamming current mint(s) for another cycle.
+##  - Refresh Interval: cycle (in minutes) to search/refresh mint(s)
+##  - Stagger TXs: if true (and multiple onchain programs), fires sequentially instead of parallel
+##    • Stagger interval = trigger's process_delay / number of programs
+##    • Example: 400ms trigger process delay + 2 programs → each fires 200ms apart
+##  - Max Compute Unit Limit: max compute unit limit per transaction
+##  - Max Markets Per TX: max number of markets to include per transaction (Recommended: 4)
+##  - Stay On Winner: extends cycle when wallet has ≥ min_wins in current interval
+##    • Example: min_wins = 2, refresh_interval = 1min, and wallet lands 3 txs → continues spamming instead of rotating mints
 ##
-## Base mints: optionally set (or disable) each base mint to configure market pairs used in spam
-##  - Base Mint: Supported options are SOL, USDC, and USD1
+## Base Mints:
+##  - Enable/disable each base mint to control which market pairs are used
+##  - Supported: SOL, USDC, USD1
+##
+## For more info, visit: https://fomo-mev.gitbook.io/docs/bot/configuration
 [strategy.spam]
 enabled = true
-onchain_program = ["notarb","smb"]
+onchain_program = ["notarb"] # "notarb", "smb", or both
 memo = ""
 disable_durable_nonces = false
 refresh_interval = 1
-process_delay = 400
-stagger_txs = true
-max_compute_unit_limit = 369_690
+stagger_txs = false
+max_compute_unit_limit = 349_690
 max_markets_per_tx = 4
-restrict_level = 0
 stay_on_winner = { enabled = true, min_wins = 2 }
 
 [[strategy.spam.base_mint]] # WSOL
@@ -166,24 +171,47 @@ base_mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 enabled = true
 base_mint = "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
 
-## Spam Mints From File
-[strategy.spam.mints.from_file]
-enabled = false
-include_mints_from_file = ""
-
-## FOMO Loot API
-## Base layer config for mint discovery
+## ===================================================================
+## SPAM MINT TRIGGERS
+## Powered by FOMO's Loot API
+## ===================================================================
+## Defines filter criteria for finding mints to arb. Each trigger can have
+## different thresholds (aggressive vs conservative) and its own sender configs.
+##
+## How it works:
+##  1. Triggers are processed in order (top to bottom)
+##  2. Each trigger filters mints by ROI, volume, txs, market cap, etc.
+##  3. Matching mints are executed using senders with the same trigger_id
+##
+## Settings:
+##  - First Match Only: if true, stops after first trigger finds mint(s). Else runs all matching triggers.
+##  - Max Mint Count Per Trigger: max mints returned per trigger
+##  - Aggregation Window: lookback window (seconds) for calculating metrics
+##  - From Wallets: only include mints traded by these wallets (leave empty for all)
+##  - From Bots: only include mints traded by these bots (leave empty for all)
+##  - Exclude Mints: mints to always exclude (e.g., stables)
+##
+## Trigger Settings:
+##  - id: unique identifier for this trigger (any string you want, e.g. "aggressive", "conservative", "my-custom-trigger")
+##    • Must have at least one sender with matching trigger_id.
+##  - Process Delay: delay (in ms) between sending each transaction for this trigger.
+##  - rank_by: how to rank mints (momentum, roi, volume, etc.)
+##  - min_roi/min_volume/min_txs: minimum thresholds
+##  - min/max_market_cap: market cap range filter
+##  - markets_per_mint: filter criteria for pools (liquidity, volume, txs)
+##
+## Tips:
+##  - Order triggers aggressive → conservative (strictest filters first)
+##  - With first_match_only = true, first matching trigger wins
+##  - Min 1 required, Max 6 enabled triggers allowed
+##  - Each trigger_id must have at least one matching sender
+##
+## For more info, visit: https://fomo-mev.gitbook.io/docs/bot/configuration
 [strategy.spam.mints.fomo]
 enabled = true
-base_mints = []
-max_mint_count = 1
-aggregation_window = 60
-rank_by = "momentum"
-min_roi = 50
-min_volume = 500
-min_txs = 20
-min_market_cap = 0
-max_market_cap = 100000000
+first_match_only = true
+max_mint_count_per_trigger = 1
+aggregation_window = 300 # 5 minutes
 from_wallets = []
 from_bots = []
 exclude_mints = [
@@ -192,58 +220,131 @@ exclude_mints = [
 	"USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
 ]
 
-## FOMO Loot API: Market Filtering
-## Filter the markets returned per mint that meet this criteria
-[strategy.spam.mints.fomo.markets_per_mint]
-min_count = 2
-max_count = 5
-min_liquidity_usd = 500
-min_vol = 1
-min_txs = 1
-rank_by = "volume"
-
-## Spam Mints From Jupiter Trending
-[strategy.spam.mints.jupiter_trending]
-enabled = false
-mints_count = 1
-interval = "5m"
-rank_by_volume = true
-
 ## ===================================================================
-## SPAM SENDERS
+## SPAM MINT TRIGGER: AGGRESSIVE
 ## ===================================================================
-## For a list of ALL supported senders and their specific settings, visit:
-## https://fomo-mev.gitbook.io/docs/bot/senders
-[strategy.spam.sender.rpc]
+## For list of all available senders, visit: https://fomo-mev.gitbook.io/docs/bot/senders
+[[strategy.spam.mints.fomo.trigger]]
 enabled = true
+id = "aggressive"
+process_delay = 200
+rank_by = "momentum"
+min_roi = 100
+min_volume = 10_000
+min_txs = 300
+min_market_cap = 0
+max_market_cap = 100_000_000
+markets_per_mint = { min_liquidity_usd = 500, min_vol = 0, min_txs = 0, rank_by = "liquidity" }
+
+[[strategy.spam.sender]]
+type = "rpc"
+enabled = true
+trigger_id = "aggressive" # must match the trigger id set in the trigger config
 skip_durable_nonce = false
-compute_unit_price = 60_000
-max_compute_unit_price = 300_000
+compute_unit_price = 100_000
+max_compute_unit_price = 250_000
 use_different_tx_per_sender = false
 no_failure_mode = true
 send_urls = [
-    "https://mainnet.helius-rpc.com/?api-key=*********************"
+    "https://beta.helius-rpc.com/?api-key=********"
 ]
 
-## Jito
-[strategy.spam.sender.jito]
-enabled = false
+[[strategy.spam.sender]]
+type = "helius"
+enabled = true
+trigger_id = "aggressive" # must match the trigger id set in the trigger config
+api_key = "" # optional for Helius
 skip_durable_nonce = false
-use_different_tx_per_block_engine = false
-tip_amount = { strategy = "tipstream", percentile = 65, max_tip = 20_000 }
-uuid = ""
-no_failure_mode = true
-block_engines = ["ams","dub","fra","lon","nyc","slc","sgr","tyo"]
-
-## Helius Sender
-[strategy.spam.sender.helius]
-enabled = false
-skip_durable_nonce = false
-compute_unit_price = 40_000
-max_compute_unit_price = 100_000
+compute_unit_price = 100_000
+max_compute_unit_price = 250_000
 use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 200_000, to = 500_000 }
+tip_amount = { strategy = "random", from = 1_000_000, to = 2_500_000 }
 no_failure_mode = false
 swqos_only = false
-use_api_key = false
+regions = ["fra"]
+
+## ===================================================================
+## SPAM MINT TRIGGER: MODERATE
+## ===================================================================
+## For list of all available senders, visit: https://fomo-mev.gitbook.io/docs/bot/senders
+[[strategy.spam.mints.fomo.trigger]]
+enabled = true
+id = "moderate"
+process_delay = 400
+rank_by = "momentum"
+min_roi = 100
+min_volume = 5_000
+min_txs = 200
+min_market_cap = 0
+max_market_cap = 100_000_000
+markets_per_mint = { min_liquidity_usd = 500, min_vol = 0, min_txs = 0, rank_by = "liquidity" }
+
+[[strategy.spam.sender]]
+type = "rpc"
+enabled = true
+trigger_id = "moderate" # must match the trigger id set in the trigger config
+skip_durable_nonce = false
+compute_unit_price = 60_000
+max_compute_unit_price = 150_000
+use_different_tx_per_sender = false
+no_failure_mode = true
+send_urls = [
+    "https://beta.helius-rpc.com/?api-key=********"
+]
+
+[[strategy.spam.sender]]
+type = "helius"
+enabled = true
+trigger_id = "moderate" # must match the trigger id set in the trigger config
+api_key = "" # optional for Helius
+skip_durable_nonce = false
+compute_unit_price = 60_000
+max_compute_unit_price = 150_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 2_500_000 }
+no_failure_mode = false
+swqos_only = false
+regions = ["fra"]
+
+## ===================================================================
+## SPAM MINT TRIGGER: CONSERVATIVE
+## ===================================================================
+## For list of all available senders, visit: https://fomo-mev.gitbook.io/docs/bot/senders
+[[strategy.spam.mints.fomo.trigger]]
+enabled = true
+id = "conservative"
+process_delay = 400
+rank_by = "momentum"
+min_roi = 40
+min_volume = 1_000
+min_txs = 100
+min_market_cap = 0
+max_market_cap = 100_000_000
+markets_per_mint = { min_liquidity_usd = 500, min_vol = 0, min_txs = 0, rank_by = "liquidity" }
+
+[[strategy.spam.sender]]
+type = "rpc"
+enabled = true
+trigger_id = "conservative" # must match the trigger id set in the trigger config
+skip_durable_nonce = false
+compute_unit_price = 8_000
+max_compute_unit_price = 100_000
+use_different_tx_per_sender = false
+no_failure_mode = true
+send_urls = [
+    "https://beta.helius-rpc.com/?api-key=********"
+]
+
+[[strategy.spam.sender]]
+type = "helius"
+enabled = true
+trigger_id = "conservative" # must match the trigger id set in the trigger config
+api_key = "" # optional for Helius
+skip_durable_nonce = false
+compute_unit_price = 8_000
+max_compute_unit_price = 100_000
+use_different_tx_per_region = false
+tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+no_failure_mode = false
+swqos_only = false
 regions = ["fra"]
