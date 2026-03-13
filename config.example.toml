@@ -14,11 +14,32 @@
 ## For more info, visit: https://discord.gg/RaEa694AH5
 [bot]
 rpc_url = "https://solana-rpc.publicnode.com"
-auto_restart = 20
+auto_restart = 10
 debug_mode = false
 slot_memo = false
 close_unused_atas = true
 fomo_api_key = ""
+
+## ===================================================================
+## AUTO STANDBY
+## ===================================================================
+## Automatically pauses bot when market sentiment is below a set threshold.
+## Note: Market sentiment is calculated based on the number of arbitrage transactions in the last X hours
+## and is only checked when the bot starts or restarts, not continuously
+##
+## Settings:
+##  - Enabled: if true, enables auto standby mode
+##  - Min Market Sentiment: minimum sentiment level to keep bot active
+##    • Options: 0 (ngmi, < 168 txs/min), 1 (meh, ≥ 168 txs/min), 2 (neutral, ≥ 243 txs/min), 3 (wagmi, ≥ 278 txs/min)
+##  - Window: time window for sentiment calculation
+##    • Options: 1hr, 6hr, 12hr
+##  - Custom Threshold: set a custom txs/min threshold vs. using sentiment levels (0 = disabled)
+##    • If > 0, bypasses min_market_sentiment and uses this 'txs per minute' threshold instead
+[auto_standby]
+enabled = true
+min_market_sentiment = 1
+window = "6hr"
+custom_threshold = 0
 
 ## ===================================================================
 ## MARKETS
@@ -134,6 +155,7 @@ nonce_seed = ""
 ##    • If multiple set, opportunity will be sent to each one.
 ##  - Memo: optional memo to add to txs
 ##  - Disable Durable Nonces: disables the use of durable nonces on this strategy
+##  - Disable Set Loaded Accounts: if true, skips adding SetLoadedAccountsDataSizeLimit instruction to transactions
 ##  - Refresh Interval: cycle (in minutes) to search/refresh mint(s)
 ##  - Stagger TXs: if true (and multiple onchain programs), fires sequentially instead of parallel
 ##    • Stagger interval = trigger's process_delay / number of programs
@@ -150,12 +172,13 @@ nonce_seed = ""
 ## For more info, visit: https://fomo-mev.gitbook.io/docs/bot/configuration
 [strategy.spam]
 enabled = true
-onchain_program = ["notarb"] # "notarb", "smb", or both
+onchain_program = ["notarb"]
 memo = ""
 disable_durable_nonces = false
+disable_set_loaded_accounts = false
 refresh_interval = 1
 stagger_txs = false
-max_compute_unit_limit = 349_690
+max_compute_unit_limit = 409_690
 max_markets_per_tx = 4
 stay_on_winner = { enabled = true, min_wins = 2 }
 
@@ -211,7 +234,7 @@ base_mint = "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
 enabled = true
 first_match_only = true
 max_mint_count_per_trigger = 1
-aggregation_window = 300 # 5 minutes
+aggregation_window = 300
 from_wallets = []
 from_bots = []
 exclude_mints = [
@@ -246,14 +269,14 @@ max_compute_unit_price = 250_000
 use_different_tx_per_sender = false
 no_failure_mode = true
 send_urls = [
-    "https://beta.helius-rpc.com/?api-key=********"
+    "https://beta.helius-rpc.com/?api-key=********************"
 ]
 
 [[strategy.spam.sender]]
 type = "helius"
 enabled = true
 trigger_id = "aggressive" # must match the trigger id set in the trigger config
-api_key = "" # optional for Helius
+api_key = ""
 skip_durable_nonce = false
 compute_unit_price = 100_000
 max_compute_unit_price = 250_000
@@ -289,14 +312,14 @@ max_compute_unit_price = 150_000
 use_different_tx_per_sender = false
 no_failure_mode = true
 send_urls = [
-    "https://beta.helius-rpc.com/?api-key=********"
+    "https://beta.helius-rpc.com/?api-key=********************"
 ]
 
 [[strategy.spam.sender]]
 type = "helius"
 enabled = true
 trigger_id = "moderate" # must match the trigger id set in the trigger config
-api_key = "" # optional for Helius
+api_key = ""
 skip_durable_nonce = false
 compute_unit_price = 60_000
 max_compute_unit_price = 150_000
@@ -313,9 +336,9 @@ regions = ["fra"]
 [[strategy.spam.mints.fomo.trigger]]
 enabled = true
 id = "conservative"
-process_delay = 400
+process_delay = 200
 rank_by = "momentum"
-min_roi = 40
+min_roi = 20
 min_volume = 1_000
 min_txs = 100
 min_market_cap = 0
@@ -332,19 +355,19 @@ max_compute_unit_price = 100_000
 use_different_tx_per_sender = false
 no_failure_mode = true
 send_urls = [
-    "https://beta.helius-rpc.com/?api-key=********"
+    "https://beta.helius-rpc.com/?api-key=********************"
 ]
 
 [[strategy.spam.sender]]
 type = "helius"
 enabled = true
 trigger_id = "conservative" # must match the trigger id set in the trigger config
-api_key = "" # optional for Helius
+api_key = ""
 skip_durable_nonce = false
 compute_unit_price = 8_000
 max_compute_unit_price = 100_000
 use_different_tx_per_region = false
-tip_amount = { strategy = "random", from = 1_000_000, to = 1_500_000 }
+tip_amount = { strategy = "random", from = 10_000_000, to = 15_000_000 }
 no_failure_mode = false
 swqos_only = false
 regions = ["fra"]
