@@ -16,6 +16,7 @@ Easy config. No MEV bot-specific nonsense. Hassle-free, fast setup.
 **💸 Multi-Tier Mint Strategies (Up to 6, Fully Customizable)**<br>
 **💸 Dynamic Priority Fees**<br>
 **💸 Automated Durable Nonce Management**<br>
+**💸 'Auto Standby' mode**<br>
 **💸 Flashloan Integration**<br>
 **💸 Jito TipStream Integration**<br>
 **💸 Automated ATA Management**<br>
